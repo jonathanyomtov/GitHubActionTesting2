@@ -1,15 +1,22 @@
 on: registry_package
-
+name: Docker image security scan
 jobs:
-  example:
-    name: Examples
+  gpSecurityJob:
+    name: GP Security Check Job
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1.0.0
-    - name: Scan
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      uses: ./.github/actions/whitesource-unified-agent
-      with:
-        args: -c ./wss-unified-agent.config
+      - name: GP Security Check Step
+        id: gp-security-check
+        uses: daniel-brown-ws/GitHubPackagesSecurityAction@c8e62e5d773c379c15914d591cda4d6eaf8c0657
+        with:
+          gp-token: ${{ secrets.GP_TOKEN }}
+          ws-api-key: ${{ secrets.WS_API_KEY }}
+          ws-user-key: ${{ secrets.WS_USER_KEY }}
+          ws-product-key: ${{ secrets.WS_PRODUCT_KEY }}
+          ws-destination-url: https://saas.whitesourcesoftware.com/agent
+          print-scan-report: true
+      - name: Upload Report
+        uses: actions/upload-artifact@master
+        with:
+          name: security-scan-log
+          path: ${{ steps.gp-security-check.outputs.scan-report-folder-path }}
